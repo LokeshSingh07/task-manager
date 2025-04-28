@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Input, Button, Select } from 'antd';
+import { Modal, Input, Button, Select, Checkbox } from 'antd';
 import toast from 'react-hot-toast';
 import axios from 'axios';
 
@@ -10,8 +10,8 @@ const CreateUserModal = ({ open, onClose, onSave, editUser }) => {
     title: '',
     description: '',
     dueDate: '',
-    status: '',
     priority: '',
+    isCompleted: false
   });
 
   useEffect(() => {
@@ -20,22 +20,22 @@ const CreateUserModal = ({ open, onClose, onSave, editUser }) => {
         _id: editUser._id || '',
         title: editUser.title || '',
         description: editUser.description || '',
-        dueDate: editUser.dueDate ? editUser.dueDate : '',
-        status: editUser.status || '',
+        dueDate: editUser.dueDate || '',
         priority: editUser.priority || '',
+        isCompleted: editUser.isCompleted || false
       });
     } else {
       setUser({
         title: '',
         description: '',
         dueDate: '',
-        status: '',
         priority: '',
+        isCompleted: false
       });
     }
   }, [editUser]);
 
-  const handleSubmit = async() => {
+  const handleSubmit = async () => {
     // Validate fields
     if (!user.title.trim()) {
       toast.error('Title is required');
@@ -49,39 +49,28 @@ const CreateUserModal = ({ open, onClose, onSave, editUser }) => {
       toast.error('Due Date is required');
       return;
     }
-    if (!user.status) {
-      toast.error('Status is required');
-      return;
-    }
     if (!user.priority) {
       toast.error('Priority is required');
       return;
     }
 
-    // Prepare user object
     const newUser = {
       ...user,
-      dueDate: new Date(user.dueDate), // Ensure dueDate is in the correct format
+      dueDate: new Date(user.dueDate)
     };
 
-    // Call onSave
-    
-    try{
+    try {
       let response;
-      if(editUser){
-        // console.log("user: ", user);
-        response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/v1/tasks/${user._id}`, user);  
+      if (editUser) {
+        response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/v1/tasks/${user._id}`, newUser);
+      } else {
+        response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/v1/tasks`, newUser);
       }
-      else{
-        response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/v1/tasks`, user);
-      }
-      console.log("response : ", response)
       onSave(response.data);
+    } catch (err) {
+      console.error(err);
+      toast.error("Internal server error");
     }
-    catch(err){
-      toast.error("Internal server error")
-    }
-
   };
 
   return (
@@ -124,19 +113,6 @@ const CreateUserModal = ({ open, onClose, onSave, editUser }) => {
         />
       </div>
       <div className="modal-field">
-        <label className="field-label">Status</label>
-        <Select
-          value={user.status || undefined}
-          onChange={(value) => setUser({ ...user, status: value })}
-          placeholder="Select status"
-          style={{ width: '100%' }}
-        >
-          <Option value="ToDo">ToDo</Option>
-          <Option value="InProgress">In Progress</Option>
-          <Option value="Completed">Completed</Option>
-        </Select>
-      </div>
-      <div className="modal-field">
         <label className="field-label">Priority</label>
         <Select
           value={user.priority || undefined}
@@ -148,6 +124,15 @@ const CreateUserModal = ({ open, onClose, onSave, editUser }) => {
           <Option value="Medium">Medium</Option>
           <Option value="Low">Low</Option>
         </Select>
+      </div>
+      <div className="modal-field">
+        {/* <label className="field-label">Completed</label> */}
+        <Checkbox
+          checked={user.isCompleted}
+          onChange={(e) => setUser({ ...user, isCompleted: e.target.checked })}
+        >
+          Is Completed
+        </Checkbox>
       </div>
     </Modal>
   );

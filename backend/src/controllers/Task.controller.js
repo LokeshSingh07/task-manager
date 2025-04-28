@@ -1,5 +1,5 @@
 import {Task} from '../models/Task.models.js';
-import { importTasksFromUrl } from '../utils/taskUtils.js';
+import { importTasksFromUrl, isValidGoogleSheetsUrl } from '../utils/taskUtils.js';
 
 
 
@@ -9,6 +9,12 @@ export const importTasks = async (req, res) => {
     const { url } = req.body;
     if (!url) {
       return res.status(400).json({ message: 'Google Sheets URL is required' });
+    }
+
+    if(!isValidGoogleSheetsUrl(url)){
+      return res.status(401).json({
+        message: "Invalid google sheet url"
+      })
     }
 
     const tasks = await importTasksFromUrl(url);
@@ -41,8 +47,8 @@ export const getAllTasks = async (req, res) => {
 
 export const createTask = async (req, res) => {
   try {
-    const { title, description, dueDate, priority, status } = req.body;
-    const newTask = new Task({ title, description, dueDate, priority, status, isCompleted: false});
+    const { title, description, dueDate, priority, isCompleted } = req.body;
+    const newTask = new Task({ title, description, dueDate, priority, isCompleted: isCompleted || false});
     await newTask.save();
     return res.status(201).json(newTask);
   }

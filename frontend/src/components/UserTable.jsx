@@ -19,11 +19,8 @@ const UserTable = ({ inputUrl, setInputUrl }) => {
   const fetchData = async () => {
     try {
       const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/v1/import`, { url: inputUrl });
-      const fetchedData = response.data.data.map((item, index) => ({
+      const fetchedData = response.data.data.map((item) => ({
         ...item,
-        // profession: ['Engineer', 'Doctor', 'Teacher', 'Designer', 'Developer'][index % 5],
-        // gender: index % 2 === 0 ? 'Male' : 'Female',
-        // experience: Math.floor(Math.random() * 10) + 1,
         completed: false,
       }));
       setData(fetchedData);
@@ -31,38 +28,32 @@ const UserTable = ({ inputUrl, setInputUrl }) => {
       toast.success('Data fetched successfully!');
     } catch (error) {
       console.error('Error fetching data:', error);
-      toast.error('Failed to fetch data');
+      toast.error(error.response.data.message);
     }
   };
 
-
   const fetchAllData = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/tasks`); // Assuming `/tasks` fetches all
-      const fetchedData = response.data.map((item, index) => ({
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/tasks`);
+      const fetchedData = response.data.map((item) => ({
         ...item,
         completed: item.isCompleted,
       }));
-      // console.log("response:  ", response);
       setData(fetchedData);
       setFilteredData(fetchedData);
-      toast.success('All data fetched successfully!');
     } catch (error) {
       console.error('Error fetching all data:', error);
-      toast.error('Failed to fetch all data');
+      toast.error(error.response.data.message);
     }
-  };  
+  };
 
   useEffect(() => {
     fetchAllData();
   }, []);
-  
-
-
 
   useEffect(() => {
     const filtered = data.filter((item) =>
-      [item.title, item.description, item.status, item.priority].some((field) =>
+      [item.title, item.description, item.priority].some((field) =>
         field?.toLowerCase().includes(searchTerm.toLowerCase().trim())
       )
     );
@@ -78,41 +69,44 @@ const UserTable = ({ inputUrl, setInputUrl }) => {
   };
 
   const handleEdit = (row) => {
-    // console.log("row data: ", row);
     setEditUser(row);
-    // console.log(editUser);
     setOpenCreateModal(true);
   };
 
-  const handleDelete = async(_id) => {
+  const handleDelete = async (_id) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
-      const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/api/v1/tasks/${_id}`);
-      console.log("response : ", response)
-      setData(data.filter((item) => item._id !== _id));
-
-      toast.success(response.data.message || 'Task deleted successfully!');
+      try {
+        const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/api/v1/tasks/${_id}`);
+        setData(data.filter((item) => item._id !== _id));
+        toast.success(response.data.message || 'Task deleted successfully!');
+      } catch (error) {
+        console.error('Delete error:', error);
+        toast.error('Failed to delete user');
+      }
     }
   };
 
-  const handleComplete = async(row) => {
-    const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/v1/tasks/${row._id}`, {...row, isCompleted:true});
-    setData(data.map((item) => (item._id === row._id ? { ...item, completed: true } : item)));
-
-    toast.success(`User ID: ${row._id} marked as complete!`, { icon: '✅' });
+  const handleComplete = async (row) => {
+    try {
+      const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/v1/tasks/${row._id}`, { ...row, isCompleted: true });
+      setData(data.map((item) => (item._id === row._id ? { ...item, completed: true } : item)));
+      toast.success(`User ID: ${row._id} marked as complete!`, { icon: '✅' });
+    } catch (error) {
+      console.error('Complete error:', error);
+      toast.error('Failed to mark as complete');
+    }
   };
 
   const handleSaveUser = (user) => {
     const parsedUser = {
       ...user,
-      experience: parseInt(user.experience),
-      completed: false,
+      completed: user.isCompleted || false,
     };
 
     if (editUser) {
       setData(data.map((item) => (item._id === parsedUser._id ? parsedUser : item)));
       toast.success('User updated successfully!');
     } else {
-      // New user
       if (data.some((item) => item._id === parsedUser._id)) {
         toast.error('User ID already exists!');
         return;
@@ -150,10 +144,10 @@ const UserTable = ({ inputUrl, setInputUrl }) => {
       wrap: true,
     },
     {
-      name: 'Status',
-      selector: (row) => row.status,
+      name: 'Due Date',
+      selector: (row) => row.dueDate ? new Date(row.dueDate).toLocaleDateString() : 'N/A',
       sortable: true,
-      width: '120px',
+      width: '150px',
     },
     {
       name: 'Priority',
@@ -258,7 +252,7 @@ const UserTable = ({ inputUrl, setInputUrl }) => {
         <Input
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search by Title, Description, Status, or Priority"
+          placeholder="Search by Title, Description, or Priority"
           prefix={<SearchOutlined />}
           className="search-input"
         />
