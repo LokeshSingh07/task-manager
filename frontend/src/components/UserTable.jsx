@@ -35,6 +35,31 @@ const UserTable = ({ inputUrl, setInputUrl }) => {
     }
   };
 
+
+  const fetchAllData = async () => {
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/tasks`); // Assuming `/tasks` fetches all
+      const fetchedData = response.data.map((item, index) => ({
+        ...item,
+        completed: false,
+      }));
+      // console.log("response:  ", response);
+      setData(fetchedData);
+      setFilteredData(fetchedData);
+      toast.success('All data fetched successfully!');
+    } catch (error) {
+      console.error('Error fetching all data:', error);
+      toast.error('Failed to fetch all data');
+    }
+  };  
+
+  useEffect(() => {
+    fetchAllData();
+  }, []);
+  
+
+
+
   useEffect(() => {
     const filtered = data.filter((item) =>
       [item.title, item.description, item.status, item.priority].some((field) =>
