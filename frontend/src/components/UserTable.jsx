@@ -131,12 +131,12 @@ const UserTable = ({ inputUrl, setInputUrl }) => {
       sortable: true,
       wrap: true,
     },
-    {
-      name: 'ID',
-      selector: (row) => row._id,
-      sortable: true,
-      width: '250px',
-    },
+    // {
+    //   name: 'ID',
+    //   selector: (row) => row._id,
+    //   sortable: true,
+    //   width: '250px',
+    // },
     {
       name: 'Description',
       selector: (row) => row.description,
