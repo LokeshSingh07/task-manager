@@ -18,7 +18,7 @@ const UserTable = ({ inputUrl, setInputUrl }) => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.post(`http://localhost:4000/api/v1/import`, { url: inputUrl });
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/v1/import`, { url: inputUrl });
       const fetchedData = response.data.data.map((item, index) => ({
         ...item,
         // profession: ['Engineer', 'Doctor', 'Teacher', 'Designer', 'Developer'][index % 5],
@@ -61,7 +61,7 @@ const UserTable = ({ inputUrl, setInputUrl }) => {
 
   const handleDelete = async(_id) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
-      const response = await axios.delete(`http://localhost:4000/api/v1/tasks/${_id}`);
+      const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/api/v1/tasks/${_id}`);
       console.log("response : ", response)
       setData(data.filter((item) => item._id !== _id));
 

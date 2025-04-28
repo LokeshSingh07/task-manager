@@ -69,11 +69,11 @@ const CreateUserModal = ({ open, onClose, onSave, editUser }) => {
     try{
       let response;
       if(editUser){
-        console.log("user: ", user);
-        response = await axios.put(`http://localhost:4000/api/v1/tasks/${user._id}`, user);  
+        // console.log("user: ", user);
+        response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/v1/tasks/${user._id}`, user);  
       }
       else{
-        response = await axios.post(`http://localhost:4000/api/v1/tasks`, user);
+        response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/v1/tasks`, user);
       }
       console.log("response : ", response)
       onSave(response.data);
