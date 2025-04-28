@@ -41,7 +41,7 @@ const UserTable = ({ inputUrl, setInputUrl }) => {
       const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/tasks`); // Assuming `/tasks` fetches all
       const fetchedData = response.data.map((item, index) => ({
         ...item,
-        completed: false,
+        completed: item.isCompleted,
       }));
       // console.log("response:  ", response);
       setData(fetchedData);
@@ -94,9 +94,11 @@ const UserTable = ({ inputUrl, setInputUrl }) => {
     }
   };
 
-  const handleComplete = (_id) => {
-    setData(data.map((item) => (item._id === _id ? { ...item, completed: true } : item)));
-    toast.success(`User ID: ${_id} marked as complete!`, { icon: '✅' });
+  const handleComplete = async(row) => {
+    const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/v1/tasks/${row._id}`, {...row, isCompleted:true});
+    setData(data.map((item) => (item._id === row._id ? { ...item, completed: true } : item)));
+
+    toast.success(`User ID: ${row._id} marked as complete!`, { icon: '✅' });
   };
 
   const handleSaveUser = (user) => {
@@ -191,7 +193,7 @@ const UserTable = ({ inputUrl, setInputUrl }) => {
             <Button
               type="text"
               icon={<CheckCircleOutlined />}
-              onClick={() => handleComplete(row._id)}
+              onClick={() => handleComplete(row)}
               className={row.completed ? 'action-btn disabled' : 'action-btn complete'}
               disabled={row.completed}
             />
