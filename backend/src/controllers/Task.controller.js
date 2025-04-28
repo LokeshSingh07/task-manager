@@ -42,7 +42,7 @@ export const getAllTasks = async (req, res) => {
 export const createTask = async (req, res) => {
   try {
     const { title, description, dueDate, priority, status } = req.body;
-    const newTask = new Task({ title, description, dueDate, priority, status });
+    const newTask = new Task({ title, description, dueDate, priority, status, isCompleted: false});
     await newTask.save();
     return res.status(201).json(newTask);
   }

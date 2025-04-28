@@ -6,6 +6,7 @@ const taskSchema = new mongoose.Schema({
   dueDate: { type: String, required: true },
   status: { type: String, required: true },
   priority: { type: String, required: true },
+  isCompleted: {Type: Boolean, default: false}
 });
 
 
